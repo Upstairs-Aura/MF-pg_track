@@ -1,0 +1,49 @@
+{% extends "tracker/base.html" %}
+{% block title %}{{ heading.name }} · {{ location.name }} — pg_trac{% endblock %}
+
+{% block content %}
+  <a href="{% url 'location_detail' location.id %}" class="back-link">&lsaquo; {{ location.name }}</a>
+
+  <div class="page-head">
+    <h1 class="page-title">{{ heading.name }}</h1>
+  </div>
+
+  <table class="task-table" data-sortable>
+    <thead>
+      <tr>
+        <th scope="col" class="col-status"></th>
+        <th scope="col" data-sort="name">Task</th>
+        <th scope="col" data-sort="assignee">Assignee</th>
+        <th scope="col" data-sort="start">Start</th>
+        <th scope="col" data-sort="end">End</th>
+        <th scope="col" data-sort="status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+      <tr onclick="window.location='{% url 'task_detail' task.id %}'" class="task-row">
+        <td class="col-status"><span class="signal-lamp signal-lamp--sm status-{{ task.color }}" aria-hidden="true"></span></td>
+        <td>{{ task.name }}</td>
+        <td>{{ task.assignee.name }}</td>
+        <td class="mono">{{ task.start_date|date:"Y-m-d" }}</td>
+        <td class="mono">{{ task.end_date|date:"Y-m-d" }}</td>
+        <td>
+          <span class="pill pill--{{ task.status_slug }}">{{ task.get_status_display }}</span>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="empty-state">No tasks under this heading yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if heading.slug == 'extra-addons' %}
+    <form method="post" action="{% url 'add_addon_task' location.id %}" class="addon-form">
+      {% csrf_token %}
+      <input class="field-input" type="text" name="task_name" placeholder="Type a new task and press add" required>
+      <button type="submit" class="btn btn--secondary">Add task</button>
+    </form>
+  {% else %}
+    <a href="{% url 'add_task' location.id heading.slug %}" class="btn btn--secondary btn--add">+ Add task</a>
+  {% endif %}
+{% endblock %}

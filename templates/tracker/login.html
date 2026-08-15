@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log in — pg_trac</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'tracker/styles.css' %}">
+</head>
+<body class="login-body">
+
+  <div class="login-card">
+    <div class="brand brand--center">
+      <span class="brand-mark" aria-hidden="true"></span>
+      pg_trac
+    </div>
+    <p class="login-sub">Project schedule tracker</p>
+
+    <form method="post" class="login-form">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <p class="form-error">{{ form.non_field_errors.0 }}</p>
+      {% endif %}
+
+      <label class="field-label" for="id_staff_id">Staff ID</label>
+      <input class="field-input" type="text" id="id_staff_id" name="staff_id" autocomplete="username" required>
+
+      <label class="field-label" for="id_password">Password</label>
+      <input class="field-input" type="password" id="id_password" name="password" autocomplete="current-password" required>
+
+      <button type="submit" class="btn btn--primary btn--full">Log in</button>
+    </form>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+{% extends "tracker/base.html" %}
+{% block title %}{{ task.name }} — pg_trac{% endblock %}
+
+{% block content %}
+  <a href="{% url 'task_list' task.heading.location.id task.heading.slug %}" class="back-link">&lsaquo; {{ task.heading.name }}</a>
+
+  <form method="post" class="task-panel">
+    {% csrf_token %}
+
+    <div class="task-panel-head">
+      <h1 class="page-title">{{ task.name }}</h1>
+      <span class="signal-lamp status-{{ task.color }}" aria-hidden="true"></span>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label class="field-label" for="id_assignee">Assignee</label>
+        <select class="field-input" id="id_assignee" name="assignee_id">
+          {% for a in assignees %}
+          <option value="{{ a.id }}" {% if a.id == task.assignee_id %}selected{% endif %}>{{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="id_status">Status</label>
+        <select class="field-input" id="id_status" name="status">
+          <option value="not_done" {% if task.status == 'not_done' %}selected{% endif %}>Not done</option>
+          <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In progress</option>
+          <option value="done" {% if task.status == 'done' %}selected{% endif %}>Done</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="id_start_date">Start date</label>
+        <input class="field-input mono" type="date" id="id_start_date" name="start_date" value="{{ task.start_date|date:'Y-m-d' }}">
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="id_end_date">End date</label>
+        <input class="field-input mono" type="date" id="id_end_date" name="end_date" value="{{ task.end_date|date:'Y-m-d' }}">
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="id_actual_end_date">Actual end date</label>
+        <input class="field-input mono" type="date" id="id_actual_end_date" name="actual_end_date" value="{{ task.actual_end_date|date:'Y-m-d' }}" {% if task.status != 'done' %}disabled{% endif %}>
+      </div>
+
+      {% if task.task_type == 'regulatory_doc' %}
+      <div class="field">
+        <label class="field-label" for="id_doc_status">Document status</label>
+        <select class="field-input" id="id_doc_status" name="doc_status">
+          <option value="received" {% if task.doc_status == 'received' %}selected{% endif %}>Received</option>
+          <option value="waiting_approval" {% if task.doc_status == 'waiting_approval' %}selected{% endif %}>Waiting approval</option>
+          <option value="sent_approved" {% if task.doc_status == 'sent_approved' %}selected{% endif %}>Sent and approved</option>
+        </select>
+      </div>
+      {% endif %}
+
+      <div class="field">
+        <label class="field-label" for="id_funds_required">Funds required</label>
+        <select class="field-input" id="id_funds_required" name="funds_type">
+          <option value="na" {% if task.funds_type == 'na' %}selected{% endif %}>N/A</option>
+          <option value="none" {% if task.funds_type == 'none' %}selected{% endif %}>None</option>
+          <option value="amount" {% if task.funds_type == 'amount' %}selected{% endif %}>Amount</option>
+        </select>
+        <input class="field-input mono" type="number" name="funds_amount" placeholder="0.00" value="{{ task.funds_amount|default_if_none:'' }}" {% if task.funds_type != 'amount' %}disabled{% endif %}>
+      </div>
+    </div>
+
+    {% if task.task_type == 'regulatory_doc' %}
+    <div class="subsection">
+      <h2 class="subsection-title">Action points</h2>
+      <ul class="action-point-list">
+        {% for ap in task.action_points.all %}
+        <li class="action-point">
+          <span class="signal-lamp signal-lamp--sm status-{{ ap.color }}" aria-hidden="true"></span>
+          <a href="{% url 'task_detail' ap.id %}">{{ ap.name }}</a>
+          <span class="action-point-assignee">{{ ap.assignee.name }}</span>
+          <span class="pill pill--{{ ap.status_slug }}">{{ ap.get_status_display }}</span>
+        </li>
+        {% empty %}
+        <li class="empty-state">No action points yet.</li>
+        {% endfor %}
+      </ul>
+      <a href="{% url 'add_action_point' task.id %}" class="btn btn--secondary btn--sm">+ Add action point</a>
+    </div>
+    {% endif %}
+
+    <div class="subsection">
+      <h2 class="subsection-title">Remarks</h2>
+      <ul class="remark-list">
+        {% for r in task.remarks_all %}
+        <li class="remark">
+          <span class="remark-meta mono">{{ r.created_at|date:"Y-m-d" }} · {{ r.author.name }}</span>
+          <p class="remark-text">{{ r.text }}</p>
+        </li>
+        {% empty %}
+        <li class="empty-state">No remarks yet.</li>
+        {% endfor %}
+      </ul>
+      <textarea class="field-input" name="new_remark" placeholder="Add a remark..." rows="2"></textarea>
+    </div>
+
+    <details class="subsection">
+      <summary class="subsection-title subsection-title--toggle">View change history</summary>
+      <ul class="audit-list">
+        {% for entry in audit_log %}
+        <li class="audit-entry mono">
+          {{ entry.changed_at|date:"Y-m-d" }} &nbsp;{{ entry.changed_by.name }} &nbsp;
+          {{ entry.field_changed }}: {{ entry.old_value }} &rarr; {{ entry.new_value }}
+        </li>
+        {% empty %}
+        <li class="empty-state">No changes recorded yet.</li>
+        {% endfor %}
+      </ul>
+    </details>
+
+    <div class="task-panel-actions">
+      <button type="submit" class="btn btn--primary">Save</button>
+    </div>
+  </form>
+{% endblock %}

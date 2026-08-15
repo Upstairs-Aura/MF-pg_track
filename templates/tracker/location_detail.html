@@ -1,0 +1,30 @@
+{% extends "tracker/base.html" %}
+{% block title %}{{ location.name }} — pg_trac{% endblock %}
+
+{% block content %}
+  <a href="{% url 'homepage' %}" class="back-link">&lsaquo; All locations</a>
+
+  <div class="page-head">
+    <h1 class="page-title">{{ location.name }}</h1>
+    <p class="page-sub status-text status-{{ location.status_color }}">
+      <span class="signal-lamp signal-lamp--inline" aria-hidden="true"></span>
+      <span class="mono">{{ location.percent_complete }}%</span> complete overall
+    </p>
+  </div>
+
+  <ul class="heading-list">
+    {% for heading in scope_headings %}
+    <li>
+      <a href="{% url 'task_list' location.id heading.slug %}" class="heading-card status-{{ heading.status_color }}">
+        <span class="signal-lamp" aria-hidden="true"></span>
+        <span class="heading-name">{{ heading.name }}</span>
+        <span class="heading-count mono">
+          {{ heading.done_count }}/{{ heading.total_count }}
+          {% if heading.slug == 'regulatory-documents' %}secured{% else %}tasks done{% endif %}
+        </span>
+        <span class="chevron" aria-hidden="true">&rsaquo;</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

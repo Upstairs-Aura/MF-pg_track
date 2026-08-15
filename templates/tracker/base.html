@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}pg_trac{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'tracker/styles.css' %}">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="{% url 'homepage' %}" class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        pg_trac
+      </a>
+
+      <nav class="topbar-right">
+        <ul class="online-list" id="online-list" aria-label="Managers currently logged in">
+          {% for m in online_managers %}
+          <li class="online-badge" title="{{ m.name }}">{{ m.initials }}</li>
+          {% endfor %}
+        </ul>
+        <a href="{% url 'archive' %}" class="topbar-link">Archive</a>
+        <form method="post" action="{% url 'logout' %}" class="logout-form">
+          {% csrf_token %}
+          <button type="submit" class="topbar-link topbar-link--muted">Log out</button>
+        </form>
+      </nav>
+    </div>
+  </header>
+
+  {% if is_archived_view %}
+  <div class="archive-banner">
+    Archived snapshot — {{ snapshot_date }} — read only
+  </div>
+  {% endif %}
+
+  <main class="page">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{% static 'tracker/app.js' %}"></script>
+</body>
+</html>

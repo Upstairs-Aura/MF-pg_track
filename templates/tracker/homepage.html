@@ -1,0 +1,41 @@
+{% extends "tracker/base.html" %}
+{% block title %}Locations — pg_trac{% endblock %}
+
+{% block content %}
+  <div class="page-head">
+    <h1 class="page-title">Locations</h1>
+    <p class="page-sub">Sorted by tasks overdue, then at risk, then name</p>
+  </div>
+
+  <ul class="location-list">
+    {% for loc in locations %}
+    <li>
+      <a href="{% url 'location_detail' loc.id %}" class="location-card status-{{ loc.status_color }}">
+        <span class="signal-lamp" aria-hidden="true"></span>
+
+        <span class="location-main">
+          <span class="location-name">{{ loc.name }}</span>
+          <span class="location-meta">
+            <span class="mono">{{ loc.percent_complete }}%</span> complete
+            {% if loc.overdue_count %}
+              · <span class="mono">{{ loc.overdue_count }}</span> overdue
+            {% elif loc.at_risk_count %}
+              · at risk
+            {% else %}
+              · on track
+            {% endif %}
+          </span>
+        </span>
+
+        <span class="progress-track" aria-hidden="true">
+          <span class="progress-fill" style="width: {{ loc.percent_complete }}%;"></span>
+        </span>
+
+        <span class="chevron" aria-hidden="true">&rsaquo;</span>
+      </a>
+    </li>
+    {% empty %}
+    <li class="empty-state">No locations yet.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
