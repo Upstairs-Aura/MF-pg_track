@@ -37,7 +37,7 @@
     </tbody>
   </table>
 
-  {% if heading.slug == 'extra-addons' %}
+  {% if heading.slug == 'extra_addons' %}
     <form method="post" action="{% url 'add_addon_task' location.id %}" class="addon-form">
       {% csrf_token %}
       <input class="field-input" type="text" name="task_name" placeholder="Type a new task and press add" required>
