@@ -13,4 +13,6 @@ urlpatterns = [
     path("task/<int:task_id>/add-action-point/", views.add_action_point, name="add_action_point"),
     path("archive/", views.archive, name="archive"),
     path("archive/<int:snapshot_id>/", views.archive_detail, name="archive_detail"),
+    path("location/add/", views.add_location, name="add_location"),
+    path("api/online/", views.online_status, name="online_status"),
 ]

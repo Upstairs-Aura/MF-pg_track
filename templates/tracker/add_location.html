@@ -1,0 +1,21 @@
+{% extends "tracker/base.html" %}
+{% block title %}Add Location — pg_trac{% endblock %}
+
+{% block content %}
+<a href="{% url 'homepage' %}" class="back-link">&lsaquo; All locations</a>
+
+<div class="page-head">
+    <h1 class="page-title">Add Location</h1>
+</div>
+
+<form method="post" class="task-panel" style="max-width: 420px;">
+    {% csrf_token %}
+    <div class="field">
+        <label class="field-label" for="id_name">Location name</label>
+        <input class="field-input" type="text" id="id_name" name="name" placeholder="e.g. Ho Site" required autofocus>
+    </div>
+    <div class="task-panel-actions">
+        <button type="submit" class="btn btn--primary">Add location</button>
+    </div>
+</form>
+{% endblock %}
