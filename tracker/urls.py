@@ -8,7 +8,6 @@ urlpatterns = [
     path("location/<int:location_id>/", views.location_detail, name="location_detail"),
     path("location/<int:location_id>/<str:heading_slug>/", views.task_list, name="task_list"),
     path("location/<int:location_id>/<str:heading_slug>/add/", views.add_task, name="add_task"),
-    path("location/<int:location_id>/add-addon/", views.add_addon_task, name="add_addon_task"),
     path("task/<int:task_id>/", views.task_detail, name="task_detail"),
     path("task/<int:task_id>/add-action-point/", views.add_action_point, name="add_action_point"),
     path("archive/", views.archive, name="archive"),
@@ -18,4 +17,5 @@ urlpatterns = [
     path("completed/", views.completed_projects, name="completed_projects"),
     path("location/<int:location_id>/archive/", views.archive_location, name="archive_location"),
     path("location/<int:location_id>/restore/", views.restore_location, name="restore_location"),
+    path("location/<int:location_id>/add-deliverable/", views.add_deliverable, name="add_deliverable"),
 ]

@@ -32,4 +32,11 @@
     </li>
     {% endfor %}
   </ul>
+
+<form method="post" action="{% url 'add_deliverable' location.id %}" class="addon-form">
+  {% csrf_token %}
+  <input class="field-input" type="text" name="deliverable_name" placeholder="Name a new deliverable and add it" required>
+  <button type="submit" class="btn btn--secondary">+ Add deliverable</button>
+</form>
+
 {% endblock %}
