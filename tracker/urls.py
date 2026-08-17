@@ -15,4 +15,7 @@ urlpatterns = [
     path("archive/<int:snapshot_id>/", views.archive_detail, name="archive_detail"),
     path("location/add/", views.add_location, name="add_location"),
     path("api/online/", views.online_status, name="online_status"),
+    path("completed/", views.completed_projects, name="completed_projects"),
+    path("location/<int:location_id>/archive/", views.archive_location, name="archive_location"),
+    path("location/<int:location_id>/restore/", views.restore_location, name="restore_location"),
 ]
