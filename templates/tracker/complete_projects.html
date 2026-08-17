@@ -1,0 +1,36 @@
+{% extends "tracker/base.html" %}
+{% block title %}Completed Projects — pg_trac{% endblock %}
+
+{% block content %}
+<a href="{% url 'homepage' %}" class="back-link">&lsaquo; Active locations</a>
+
+<div class="page-head">
+    <h1 class="page-title">Completed Projects</h1>
+    <p class="page-sub">Archived locations, kept permanently for record</p>
+</div>
+
+<ul class="location-list">
+    {% for loc in locations %}
+    <li>
+        <div class="location-card status-{{ loc.status_color }}">
+            <span class="signal-lamp" aria-hidden="true"></span>
+            <span class="location-main">
+          <span class="location-name">{{ loc.name }}</span>
+          <span class="location-meta">
+            <span class="mono">{{ loc.percent_complete }}%</span> complete ·
+            archived <span class="mono">{{ loc.archived_at|date:"Y-m-d" }}</span>
+          </span>
+        </span>
+            <a href="{% url 'location_detail' loc.id %}" class="btn btn--secondary btn--sm">View</a>
+            <form method="post" action="{% url 'restore_location' loc.id %}"
+                  onsubmit="return confirm('Restore this project to the active list?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn--secondary btn--sm">Restore</button>
+            </form>
+        </div>
+    </li>
+    {% empty %}
+    <li class="empty-state">No completed projects yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

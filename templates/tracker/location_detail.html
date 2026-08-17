@@ -10,6 +10,11 @@
       <span class="signal-lamp signal-lamp--inline" aria-hidden="true"></span>
       <span class="mono">{{ location.percent_complete }}%</span> complete overall
     </p>
+    <form method="post" action="{% url 'archive_location' location.id %}" style="margin-top:10px;"
+          onsubmit="return confirm('Mark this project complete and move it to Completed Projects?');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--secondary">Mark complete &amp; archive</button>
+    </form>
   </div>
 
   <ul class="heading-list">
