@@ -27,7 +27,6 @@
         </ul>
         <a href="{% url 'completed_projects' %}" class="topbar-link">Completed</a>
         <a href="{% url 'archive' %}" class="topbar-link">Archive</a>
-        <a href="{% url 'archive' %}" class="topbar-link">Archive</a>
         <form method="post" action="{% url 'logout' %}" class="logout-form">
           {% csrf_token %}
           <button type="submit" class="topbar-link topbar-link--muted">Log out</button>
