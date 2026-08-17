@@ -1,0 +1,30 @@
+{% extends "tracker/base.html" %}
+{% block title %}Add Task — pg_trac{% endblock %}
+
+{% block content %}
+<a href="{% url 'task_list' location.id heading.slug %}" class="back-link">&lsaquo; {{ heading.name }}</a>
+
+<div class="page-head">
+    <h1 class="page-title">Add Task</h1>
+    <p class="page-sub">Name and dates can't be changed after the task is created</p>
+</div>
+
+<form method="post" class="task-panel" style="max-width: 420px;">
+    {% csrf_token %}
+    <div class="field" style="margin-bottom:16px;">
+        <label class="field-label" for="id_task_name">Task name</label>
+        <input class="field-input" type="text" id="id_task_name" name="task_name" required autofocus>
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+        <label class="field-label" for="id_start_date">Start date</label>
+        <input class="field-input mono" type="date" id="id_start_date" name="start_date" required>
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+        <label class="field-label" for="id_end_date">End date</label>
+        <input class="field-input mono" type="date" id="id_end_date" name="end_date" required>
+    </div>
+    <div class="task-panel-actions">
+        <button type="submit" class="btn btn--primary">Create task</button>
+    </div>
+</form>
+{% endblock %}
