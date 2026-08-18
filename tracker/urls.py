@@ -23,4 +23,5 @@ urlpatterns = [
 
     path("api/online/", views.online_status, name="online_status"),
     path("admin-reset/", views.admin_reset, name="admin_reset"),
+    path("admin-reset/logout/", views.admin_reset_logout, name="admin_reset_logout"),
 ]
