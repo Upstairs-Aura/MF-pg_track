@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password — pg_trac</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'tracker/styles.css' %}">
+</head>
+<body class="login-body">
+
+<div class="login-card" style="width: 420px;">
+    <div class="brand brand--center">
+        <span class="brand-mark" aria-hidden="true"></span>
+        pg_trac
+    </div>
+    <p class="login-sub">Reset a manager's password — session expires in 10 minutes</p>
+
+    {% if success %}
+    <p style="color: var(--green); font-size: 13px; margin-bottom: 12px;">{{ success }}</p>
+    {% endif %}
+    {% if error %}
+    <p class="form-error">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" class="login-form">
+        {% csrf_token %}
+        <label class="field-label" for="id_staff_id">Staff ID</label>
+        <input class="field-input" type="text" id="id_staff_id" name="staff_id" required>
+
+        <label class="field-label" for="id_new_password">New password</label>
+        <input class="field-input" type="password" id="id_new_password" name="new_password" required>
+
+        <label class="field-label" for="id_confirm_password">Confirm new password</label>
+        <input class="field-input" type="password" id="id_confirm_password" name="confirm_password" required>
+
+        <button type="submit" class="btn btn--primary btn--full">Reset password</button>
+    </form>
+
+    {% if recent_resets %}
+    <div class="subsection" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line);">
+        <p class="field-label" style="margin-bottom: 8px;">Recent resets</p>
+        <ul class="audit-list">
+            {% for r in recent_resets %}
+            <li class="audit-entry mono">{{ r.reset_at|date:"Y-m-d H:i" }} — {{ r.manager.staff_id }} ({{ r.manager.name }})</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

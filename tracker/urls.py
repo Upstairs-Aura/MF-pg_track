@@ -22,4 +22,5 @@ urlpatterns = [
     path("completed/", views.completed_projects, name="completed_projects"),
 
     path("api/online/", views.online_status, name="online_status"),
+    path("admin-reset/", views.admin_reset, name="admin_reset"),
 ]
