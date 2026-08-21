@@ -23,7 +23,7 @@
       {% csrf_token %}
 
       {% if form.non_field_errors %}
-        <p class="form-error">{{ form.non_field_errors.0 }}</p>
+        <p class="form-error">{{ error }}</p>
       {% endif %}
 
       <label class="field-label" for="id_staff_id">Staff ID</label>
