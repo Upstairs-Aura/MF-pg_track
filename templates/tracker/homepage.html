@@ -39,4 +39,8 @@
     <li class="empty-state">No locations yet.</li>
     {% endfor %}
   </ul>
+<div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+  <a href="{% url 'homepage_report' %}?format=word" class="btn btn--secondary">Download Word</a>
+  <a href="{% url 'homepage_report' %}?format=pdf" class="btn btn--secondary">Download PDF</a>
+</div>
 {% endblock %}

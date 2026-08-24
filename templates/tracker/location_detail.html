@@ -2,36 +2,43 @@
 {% block title %}{{ location.name }} — pg_trac{% endblock %}
 
 {% block content %}
-  <a href="{% url 'homepage' %}" class="back-link">&lsaquo; All locations</a>
+<a href="{% url 'homepage' %}" class="back-link">&lsaquo; All locations</a>
 
-  <div class="page-head">
+<div class="page-head" style="display:flex; justify-content:space-between; align-items:flex-start;">
+  <div>
     <h1 class="page-title">{{ location.name }}</h1>
     <p class="page-sub status-text status-{{ location.status_color }}">
       <span class="signal-lamp signal-lamp--inline" aria-hidden="true"></span>
       <span class="mono">{{ location.percent_complete }}%</span> complete overall
     </p>
-    <form method="post" action="{% url 'archive_location' location.id %}" style="margin-top:10px;"
-          onsubmit="return confirm('Mark this project complete and move it to Completed Projects?');">
-      {% csrf_token %}
-      <button type="submit" class="btn btn--secondary">Mark complete &amp; archive</button>
-    </form>
   </div>
+  <div style="display:flex; gap:8px;">
+    <a href="{% url 'location_report' location.id %}?format=word" class="btn btn--secondary btn--sm">Download Word</a>
+    <a href="{% url 'location_report' location.id %}?format=pdf" class="btn btn--secondary btn--sm">Download PDF</a>
+  </div>
+</div>
 
-  <ul class="heading-list">
-    {% for heading in scope_headings %}
-    <li>
-      <a href="{% url 'task_list' location.id heading.slug %}" class="heading-card status-{{ heading.status_color }}">
-        <span class="signal-lamp" aria-hidden="true"></span>
-        <span class="heading-name">{{ heading.name }}</span>
-        <span class="heading-count mono">
+<form method="post" action="{% url 'archive_location' location.id %}" style="margin-top:10px; margin-bottom: 20px;"
+      onsubmit="return confirm('Mark this project complete and move it to Completed Projects?');">
+  {% csrf_token %}
+  <button type="submit" class="btn btn--secondary">Mark complete &amp; archive</button>
+</form>
+
+<ul class="heading-list">
+  {% for heading in scope_headings %}
+  <li>
+    <a href="{% url 'task_list' location.id heading.slug %}" class="heading-card status-{{ heading.status_color }}">
+      <span class="signal-lamp" aria-hidden="true"></span>
+      <span class="heading-name">{{ heading.name }}</span>
+      <span class="heading-count mono">
           {{ heading.done_count }}/{{ heading.total_count }}
           {% if heading.slug == 'regulatory_documents' %}secured{% else %}tasks done{% endif %}
         </span>
-        <span class="chevron" aria-hidden="true">&rsaquo;</span>
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
+      <span class="chevron" aria-hidden="true">&rsaquo;</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
 
 <form method="post" action="{% url 'add_deliverable' location.id %}" class="addon-form">
   {% csrf_token %}
