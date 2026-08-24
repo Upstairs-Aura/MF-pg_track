@@ -12,6 +12,8 @@ urlpatterns = [
     path("location/<int:location_id>/add-deliverable/", views.add_deliverable, name="add_deliverable"),
     path("location/<int:location_id>/", views.location_detail, name="location_detail"),
     path("location/<int:location_id>/<str:heading_slug>/add/", views.add_task, name="add_task"),
+    path("report/", views.homepage_report, name="homepage_report"),
+    path("location/<int:location_id>/report/", views.location_report, name="location_report"),
     path("location/<int:location_id>/<str:heading_slug>/", views.task_list, name="task_list"),
 
     path("task/<int:task_id>/", views.task_detail, name="task_detail"),
