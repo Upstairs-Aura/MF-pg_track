@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; font-size: 13px; color: #1C2331; }
+        h1 { font-size: 22px; } h2 { font-size: 16px; margin-top: 24px; }
+        .meta { color: #565F70; font-size: 11px; }
+        li { margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+<h1>{{ data.location.name }} — Site Report</h1>
+<p class="meta">Generated {{ data.generated_at|date:"Y-m-d H:i" }}</p>
+
+<h2>Task Overview</h2>
+<p>Overdue: {{ data.overdue_count }} &nbsp; At risk: {{ data.at_risk_count }} &nbsp; On time: {{ data.on_time_count }}</p>
+
+<h2>Done</h2>
+<ul>{% for t in data.done %}<li>{{ t.name }}</li>{% empty %}<li>Nothing completed yet.</li>{% endfor %}</ul>
+
+<h2>To Do</h2>
+<ul>{% for t in data.todo %}<li>{{ t.name }} (due {{ t.end_date }})</li>{% empty %}<li>Nothing outstanding.</li>{% endfor %}</ul>
+
+<h2>Running Late</h2>
+<ul>{% for t in data.late %}<li>{{ t.name }} (was due {{ t.end_date }})</li>{% empty %}<li>Nothing overdue.</li>{% endfor %}</ul>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; font-size: 13px; color: #1C2331; }
+        h1 { font-size: 22px; } h2 { font-size: 16px; margin-top: 24px; }
+        .meta { color: #565F70; font-size: 11px; }
+        li { margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+<h1>Project Overview Report</h1>
+<p class="meta">Generated {{ data.generated_at|date:"Y-m-d H:i" }}</p>
+
+<h2>Completed Projects</h2>
+<ul>
+    {% for l in data.completed %}<li>{{ l.name }}</li>{% empty %}<li>None yet.</li>{% endfor %}
+</ul>
+
+<h2>Active Projects</h2>
+<ul>
+    {% for l in data.active %}<li>{{ l.name }} — {{ l.percent_complete }}% complete</li>{% endfor %}
+</ul>
+
+<h2>Task Overview</h2>
+<p>Overdue: {{ data.total_overdue }} &nbsp; At risk: {{ data.total_at_risk }} &nbsp; On time: {{ data.total_on_time }}</p>
+
+<h2>Projects of Concern</h2>
+<ul>
+    {% for l in data.concerns %}<li>{{ l.name }} — {{ l.overdue_count }} overdue, {{ l.at_risk_count }} at risk</li>
+    {% empty %}<li>No projects currently of concern.</li>{% endfor %}
+</ul>
+
+<h2>Suggested Focus</h2>
+<ul>
+    {% for l in data.focus %}<li>{{ l.name }}</li>{% empty %}<li>Nothing urgent right now.</li>{% endfor %}
+</ul>
+</body>
+</html>
