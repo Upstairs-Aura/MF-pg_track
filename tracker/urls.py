@@ -14,6 +14,9 @@ urlpatterns = [
     path("location/<int:location_id>/<str:heading_slug>/add/", views.add_task, name="add_task"),
     path("report/", views.homepage_report, name="homepage_report"),
     path("location/<int:location_id>/report/", views.location_report, name="location_report"),
+    path("access/", views.manage_access_hub, name="manage_access_hub"),
+    path("location/<int:location_id>/access/", views.manage_access, name="manage_access"),
+    path("location/<int:location_id>/deliverable/<int:heading_id>/remove/", views.remove_deliverable, name="remove_deliverable"),
     path("location/<int:location_id>/<str:heading_slug>/", views.task_list, name="task_list"),
 
     path("task/<int:task_id>/", views.task_detail, name="task_detail"),
