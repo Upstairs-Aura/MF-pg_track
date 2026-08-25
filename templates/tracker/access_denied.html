@@ -1,0 +1,9 @@
+{% extends "tracker/base.html" %}
+{% block title %}Access Denied — pg_trac{% endblock %}
+{% block content %}
+<div class="page-head">
+    <h1 class="page-title">Access Denied</h1>
+    <p class="page-sub">You don't have access to this project. Contact an admin if you believe this is a mistake.</p>
+</div>
+<a href="{% url 'homepage' %}" class="btn btn--secondary">Back to my projects</a>
+{% endblock %}

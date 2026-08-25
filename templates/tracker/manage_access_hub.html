@@ -1,0 +1,20 @@
+{% extends "tracker/base.html" %}
+{% block title %}Manage Access — pg_trac{% endblock %}
+{% block content %}
+<div class="page-head">
+    <h1 class="page-title">Manage Project Access</h1>
+    <p class="page-sub">Grant specific staff access to a project outside their department</p>
+</div>
+<ul class="archive-list">
+    {% for loc in locations %}
+    <li>
+        <a href="{% url 'manage_access' loc.id %}" class="archive-row">
+            <span>{{ loc.name }} <span class="mono" style="color:var(--ink-soft);">({{ loc.department.name|default:"No department" }})</span></span>
+            <span class="chevron" aria-hidden="true">&rsaquo;</span>
+        </a>
+    </li>
+    {% empty %}
+    <li class="empty-state">No active projects yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

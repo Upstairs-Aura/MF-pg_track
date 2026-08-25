@@ -1,0 +1,23 @@
+{% extends "tracker/base.html" %}
+{% block title %}Access — {{ location.name }} — pg_trac{% endblock %}
+{% block content %}
+<a href="{% url 'manage_access_hub' %}" class="back-link">&lsaquo; Manage Access</a>
+<div class="page-head">
+    <h1 class="page-title">{{ location.name }}</h1>
+    <p class="page-sub">Owned by {{ location.department.name|default:"no department" }}. Everyone in that department already has access — use this to add specific staff from other departments.</p>
+</div>
+<form method="post" class="task-panel">
+    {% csrf_token %}
+    <div class="checkbox-list">
+        {% for m in all_managers %}
+        <label style="display:block; margin-bottom:8px;">
+            <input type="checkbox" name="shared_managers" value="{{ m.id }}" {% if m.id in shared_ids %}checked{% endif %}>
+            {{ m.name }} ({{ m.staff_id }}) — {{ m.department.name|default:"no department" }}
+        </label>
+        {% endfor %}
+    </div>
+    <div class="task-panel-actions">
+        <button type="submit" class="btn btn--primary">Save access</button>
+    </div>
+</form>
+{% endblock %}
