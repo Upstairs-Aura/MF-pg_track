@@ -2,19 +2,26 @@
 {% block title %}Locations — pg_trac{% endblock %}
 
 {% block content %}
-  <div class="page-head">
+<div class="page-head" style="display:flex; justify-content:space-between; align-items:flex-start;">
+  <div>
     <h1 class="page-title">Locations</h1>
     <p class="page-sub">Sorted by tasks overdue, then at risk, then name</p>
-    <a href="{% url 'add_location' %}" class="btn btn--secondary" style="margin-top: 10px; display: inline-block;">+ Add location</a>
   </div>
+  <div style="display:flex; gap:8px;">
+    <a href="{% url 'add_location' %}" class="btn btn--secondary">+ Add location</a>
+    {% if current_manager.is_admin %}
+    <a href="{% url 'manage_access_hub' %}" class="btn btn--secondary">Manage Access</a>
+    {% endif %}
+  </div>
+</div>
 
-  <ul class="location-list">
-    {% for loc in locations %}
-    <li>
-      <a href="{% url 'location_detail' loc.id %}" class="location-card status-{{ loc.status_color }}">
-        <span class="signal-lamp" aria-hidden="true"></span>
+<ul class="location-list">
+  {% for loc in locations %}
+  <li>
+    <a href="{% url 'location_detail' loc.id %}" class="location-card status-{{ loc.status_color }}">
+      <span class="signal-lamp" aria-hidden="true"></span>
 
-        <span class="location-main">
+      <span class="location-main">
           <span class="location-name">{{ loc.name }}</span>
           <span class="location-meta">
             <span class="mono">{{ loc.percent_complete }}%</span> complete
@@ -28,17 +35,18 @@
           </span>
         </span>
 
-        <span class="progress-track" aria-hidden="true">
+      <span class="progress-track" aria-hidden="true">
           <span class="progress-fill" style="width: {{ loc.percent_complete }}%;"></span>
         </span>
 
-        <span class="chevron" aria-hidden="true">&rsaquo;</span>
-      </a>
-    </li>
-    {% empty %}
-    <li class="empty-state">No locations yet.</li>
-    {% endfor %}
-  </ul>
+      <span class="chevron" aria-hidden="true">&rsaquo;</span>
+    </a>
+  </li>
+  {% empty %}
+  <li class="empty-state">No locations yet.</li>
+  {% endfor %}
+</ul>
+
 <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
   <a href="{% url 'homepage_report' %}?format=word" class="btn btn--secondary">Download Word</a>
   <a href="{% url 'homepage_report' %}?format=pdf" class="btn btn--secondary">Download PDF</a>

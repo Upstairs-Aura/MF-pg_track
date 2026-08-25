@@ -15,8 +15,17 @@
   <div style="display:flex; gap:8px;">
     <a href="{% url 'location_report' location.id %}?format=word" class="btn btn--secondary btn--sm">Download Word</a>
     <a href="{% url 'location_report' location.id %}?format=pdf" class="btn btn--secondary btn--sm">Download PDF</a>
+    {% if current_manager.is_admin %}
+    <a href="{% url 'manage_access' location.id %}" class="btn btn--secondary btn--sm">Manage Access</a>
+    {% endif %}
   </div>
 </div>
+
+{% if location.shared_with_managers.all %}
+<p class="page-sub" style="margin-bottom:16px;">
+  Also shared with: {% for m in location.shared_with_managers.all %}{{ m.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+</p>
+{% endif %}
 
 <form method="post" action="{% url 'archive_location' location.id %}" style="margin-top:10px; margin-bottom: 20px;"
       onsubmit="return confirm('Mark this project complete and move it to Completed Projects?');">
@@ -26,8 +35,8 @@
 
 <ul class="heading-list">
   {% for heading in scope_headings %}
-  <li>
-    <a href="{% url 'task_list' location.id heading.slug %}" class="heading-card status-{{ heading.status_color }}">
+  <li style="display:flex; align-items:center; gap:8px;">
+    <a href="{% url 'task_list' location.id heading.slug %}" class="heading-card status-{{ heading.status_color }}" style="flex:1;">
       <span class="signal-lamp" aria-hidden="true"></span>
       <span class="heading-name">{{ heading.name }}</span>
       <span class="heading-count mono">
@@ -36,6 +45,13 @@
         </span>
       <span class="chevron" aria-hidden="true">&rsaquo;</span>
     </a>
+    {% if heading.heading_name == 'custom' %}
+    <form method="post" action="{% url 'remove_deliverable' location.id heading.id %}"
+          onsubmit="return confirm('Remove this deliverable? Any tasks under it will be deleted too.');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--secondary btn--sm">Remove</button>
+    </form>
+    {% endif %}
   </li>
   {% endfor %}
 </ul>
