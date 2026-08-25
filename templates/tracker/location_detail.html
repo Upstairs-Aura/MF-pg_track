@@ -42,13 +42,6 @@
         </span>
       <span class="chevron" aria-hidden="true">&rsaquo;</span>
     </a>
-    {% if heading.heading_name == 'custom' %}
-    <form method="post" action="{% url 'remove_deliverable' location.id heading.id %}"
-          onsubmit="return confirm('Remove this deliverable? Any tasks under it will be deleted too.');">
-      {% csrf_token %}
-      <button type="submit" class="btn btn--secondary btn--sm">Remove</button>
-    </form>
-    {% endif %}
   </li>
   {% endfor %}
 </ul>
@@ -64,10 +57,6 @@
     {% if current_manager.is_admin %}
     <a href="{% url 'manage_access' location.id %}" class="btn btn--secondary btn--sm">Manage Access</a>
     {% endif %}
-  </div>
-  <div style="display:flex; gap:8px;">
-    <a href="{% url 'location_report' location.id %}?format=word" class="btn btn--secondary btn--sm">Download Word</a>
-    <a href="{% url 'location_report' location.id %}?format=pdf" class="btn btn--secondary btn--sm">Download PDF</a>
   </div>
 </div>
 
