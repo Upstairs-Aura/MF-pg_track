@@ -15,9 +15,6 @@
   <div style="display:flex; gap:8px;">
     <a href="{% url 'location_report' location.id %}?format=word" class="btn btn--secondary btn--sm">Download Word</a>
     <a href="{% url 'location_report' location.id %}?format=pdf" class="btn btn--secondary btn--sm">Download PDF</a>
-    {% if current_manager.is_admin %}
-    <a href="{% url 'manage_access' location.id %}" class="btn btn--secondary btn--sm">Manage Access</a>
-    {% endif %}
   </div>
 </div>
 
@@ -61,5 +58,17 @@
   <input class="field-input" type="text" name="deliverable_name" placeholder="Name a new deliverable and add it" required>
   <button type="submit" class="btn btn--secondary">+ Add deliverable</button>
 </form>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+  <div>
+    {% if current_manager.is_admin %}
+    <a href="{% url 'manage_access' location.id %}" class="btn btn--secondary btn--sm">Manage Access</a>
+    {% endif %}
+  </div>
+  <div style="display:flex; gap:8px;">
+    <a href="{% url 'location_report' location.id %}?format=word" class="btn btn--secondary btn--sm">Download Word</a>
+    <a href="{% url 'location_report' location.id %}?format=pdf" class="btn btn--secondary btn--sm">Download PDF</a>
+  </div>
+</div>
 
 {% endblock %}
