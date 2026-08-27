@@ -2,6 +2,11 @@
 <html>
 <head>
     <style>
+        /* ---- live theme, read straight from static/tracker/styles.css ----
+           Editing the colors there updates this report automatically. */
+        :root { {{ theme.root_css|safe }} }
+        {{ theme.status_css|safe }}
+
         body { font-family: sans-serif; font-size: 13px; color: #1C2331; }
         h1 { font-size: 22px; } h2 { font-size: 16px; margin-top: 24px; }
         .meta { color: #565F70; font-size: 11px; }
@@ -14,26 +19,30 @@
 
 <h2>Completed Projects</h2>
 <ul>
-    {% for l in data.completed %}<li>{{ l.name }}</li>{% empty %}<li>None yet.</li>{% endfor %}
+    {% for l in data.completed %}<li class="status-text status-green">{{ l.name }}</li>{% empty %}<li>None yet.</li>{% endfor %}
 </ul>
 
 <h2>Active Projects</h2>
 <ul>
-    {% for l in data.active %}<li>{{ l.name }} — {{ l.percent_complete }}% complete</li>{% endfor %}
+    {% for l in data.active %}<li class="status-text status-{{ l.status_color }}">{{ l.name }} — {{ l.percent_complete }}% complete</li>{% endfor %}
 </ul>
 
 <h2>Task Overview</h2>
-<p>Overdue: {{ data.total_overdue }} &nbsp; At risk: {{ data.total_at_risk }} &nbsp; On time: {{ data.total_on_time }}</p>
+<p>
+    <span class="status-text status-red">Overdue: {{ data.total_overdue }}</span> &nbsp;
+    <span class="status-text status-yellow">At risk: {{ data.total_at_risk }}</span> &nbsp;
+    <span class="status-text status-green">On time: {{ data.total_on_time }}</span>
+</p>
 
 <h2>Projects of Concern</h2>
 <ul>
-    {% for l in data.concerns %}<li>{{ l.name }} — {{ l.overdue_count }} overdue, {{ l.at_risk_count }} at risk</li>
+    {% for l in data.concerns %}<li class="status-text status-{{ l.status_color }}">{{ l.name }} — {{ l.overdue_count }} overdue, {{ l.at_risk_count }} at risk</li>
     {% empty %}<li>No projects currently of concern.</li>{% endfor %}
 </ul>
 
 <h2>Suggested Focus</h2>
 <ul>
-    {% for l in data.focus %}<li>{{ l.name }}</li>{% empty %}<li>Nothing urgent right now.</li>{% endfor %}
+    {% for l in data.focus %}<li class="status-text status-{{ l.status_color }}">{{ l.name }}</li>{% empty %}<li>Nothing urgent right now.</li>{% endfor %}
 </ul>
 </body>
 </html>

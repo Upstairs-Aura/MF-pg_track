@@ -2,10 +2,20 @@
 <html>
 <head>
     <style>
+        /* ---- live theme, read straight from static/tracker/styles.css ----
+           Editing the colors there updates this report automatically. */
+        :root { {{ theme.root_css|safe }} }
+        {{ theme.status_css|safe }}
+
         body { font-family: sans-serif; font-size: 13px; color: #1C2331; }
         h1 { font-size: 22px; } h2 { font-size: 16px; margin-top: 24px; }
         .meta { color: #565F70; font-size: 11px; }
         li { margin-bottom: 4px; }
+
+        .deliverable-group { margin-bottom: 12px; }
+        .deliverable-label { font-weight: 600; margin: 0 0 4px; }
+        .deliverable-label.status-green::before { content: "✓ "; }
+        ul.task-items { margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -13,15 +23,34 @@
 <p class="meta">Generated {{ data.generated_at|date:"Y-m-d H:i" }}</p>
 
 <h2>Task Overview</h2>
-<p>Overdue: {{ data.overdue_count }} &nbsp; At risk: {{ data.at_risk_count }} &nbsp; On time: {{ data.on_time_count }}</p>
+<p>
+    <span class="status-text status-red">Overdue: {{ data.overdue_count }}</span> &nbsp;
+    <span class="status-text status-yellow">At risk: {{ data.at_risk_count }}</span> &nbsp;
+    <span class="status-text status-green">On time: {{ data.on_time_count }}</span>
+</p>
 
 <h2>Done</h2>
-<ul>{% for t in data.done %}<li>{{ t.name }}</li>{% empty %}<li>Nothing completed yet.</li>{% endfor %}</ul>
+{% for group in data.done_by_deliverable %}
+<div class="deliverable-group">
+    {% if group.fully_done %}
+    <p class="deliverable-label status-text status-green">{{ group.label }} — complete</p>
+    {% else %}
+    <p class="deliverable-label">{{ group.label }}</p>
+    <ul class="task-items">
+        {% for t in group.tasks %}
+        <li class="status-text status-{{ t.color }}">{{ t.name }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% empty %}
+<p>Nothing completed yet.</p>
+{% endfor %}
 
 <h2>To Do</h2>
-<ul>{% for t in data.todo %}<li>{{ t.name }} (due {{ t.end_date }})</li>{% empty %}<li>Nothing outstanding.</li>{% endfor %}</ul>
+<ul>{% for t in data.todo %}<li class="status-text status-{{ t.color }}">{{ t.name }} (due {{ t.end_date }})</li>{% empty %}<li>Nothing outstanding.</li>{% endfor %}</ul>
 
 <h2>Running Late</h2>
-<ul>{% for t in data.late %}<li>{{ t.name }} (was due {{ t.end_date }})</li>{% empty %}<li>Nothing overdue.</li>{% endfor %}</ul>
+<ul>{% for t in data.late %}<li class="status-text status-red">{{ t.name }} (was due {{ t.end_date }})</li>{% empty %}<li>Nothing overdue.</li>{% endfor %}</ul>
 </body>
 </html>
