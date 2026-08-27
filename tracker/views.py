@@ -23,6 +23,10 @@ from docx.shared import Pt, RGBColor
 from io import BytesIO
 # from xhtml2 import pisa
 
+from io import BytesIO
+from .report_theme import get_report_theme, hex_to_rgb
+#colors for report
+
 HEADING_ORDER = [
     "branding", "construction", "electrical", "operation",
     "safety", "regulatory_documents",
@@ -548,18 +552,52 @@ def build_homepage_report_data():
 
 
 def build_location_report_data(location):
-    tasks = list(Task.objects.filter(heading__location=location, task_type__in=["normal", "regulatory_doc"]).select_related("assignee", "heading"))
-    for t in tasks:
-        t.color = task_color(t)
+    # Same deliverable ordering used on the location dashboard: fixed
+    # headings first (in HEADING_ORDER), then custom deliverables by id.
+    all_headings = list(location.scope_headings.all())
+    fixed = [h for h in all_headings if h.heading_name in HEADING_ORDER]
+    custom = [h for h in all_headings if h.heading_name not in HEADING_ORDER]
+    fixed.sort(key=lambda h: HEADING_ORDER.index(h.heading_name))
+    custom.sort(key=lambda h: h.id)
+    headings = fixed + custom
 
-    done = [t for t in tasks if t.status == "done"]
-    late = [t for t in tasks if t.color == "red" and t.status != "done"]
-    todo = [t for t in tasks if t.status != "done" and t.color != "red"]
+    done_by_deliverable = []
+    todo = []
+    late = []
+
+    for h in headings:
+        label = h.custom_label if h.heading_name == "custom" else h.get_heading_name_display()
+        h_tasks = list(
+            Task.objects.filter(heading=h, task_type__in=["normal", "regulatory_doc"]).select_related("assignee")
+        )
+        for t in h_tasks:
+            t.color = task_color(t)
+
+        h_done = [t for t in h_tasks if t.status == "done"]
+
+        if h_done:
+            done_by_deliverable.append({
+                "label": label,
+                # Whole deliverable is finished — no need to itemize it.
+                "fully_done": len(h_done) == len(h_tasks),
+                "tasks": h_done,
+            })
+
+        for t in h_tasks:
+            if t.status == "done":
+                continue
+            if t.color == "red":
+                late.append(t)
+            else:
+                todo.append(t)
+
+    done_count = sum(len(group["tasks"]) for group in done_by_deliverable)
 
     return {
         "generated_at": timezone.now(),
         "location": location,
-        "done": done,
+        "done_by_deliverable": done_by_deliverable,
+        "done_count": done_count,
         "todo": todo,
         "late": late,
         "overdue_count": len(late),
@@ -570,10 +608,19 @@ def build_location_report_data(location):
 def _add_heading(doc, text, level=1):
     doc.add_heading(text, level=level)
 
-def _add_bullet(doc, text):
-    doc.add_paragraph(text, style="List Bullet")
+def _add_bullet(doc, text, color_hex=None):
+    p = doc.add_paragraph(style="List Bullet")
+    run = p.add_run(text)
+    if color_hex:
+        run.font.color.rgb = RGBColor(*hex_to_rgb(color_hex))
+    return p
 
-def generate_homepage_docx(data):
+def _status_hex(theme, status):
+    # Holds the colors resolved live from styles.css, so a
+    # dashboard color change is picked up here automatically.
+    return theme["hex"].get(status)
+
+def generate_homepage_docx(data, theme):
     doc = Document()
     _add_heading(doc, "Project Overview Report", level=0)
     doc.add_paragraph(f"Generated {data['generated_at'].strftime('%Y-%m-%d %H:%M')}")
@@ -581,13 +628,13 @@ def generate_homepage_docx(data):
     _add_heading(doc, "Completed Projects")
     if data["completed"]:
         for l in data["completed"]:
-            _add_bullet(doc, l.name)
+            _add_bullet(doc, l.name, _status_hex(theme, "green"))
     else:
         doc.add_paragraph("None yet.")
 
     _add_heading(doc, "Active Projects")
     for l in data["active"]:
-        _add_bullet(doc, f"{l.name} — {l.percent_complete}% complete")
+        _add_bullet(doc, f"{l.name} — {l.percent_complete}% complete", _status_hex(theme, l.status_color))
 
     _add_heading(doc, "Task Overview")
     doc.add_paragraph(f"Overdue: {data['total_overdue']}    At risk: {data['total_at_risk']}    On time: {data['total_on_time']}")
@@ -595,14 +642,14 @@ def generate_homepage_docx(data):
     _add_heading(doc, "Projects of Concern")
     if data["concerns"]:
         for l in data["concerns"]:
-            _add_bullet(doc, f"{l.name} — {l.overdue_count} overdue, {l.at_risk_count} at risk")
+            _add_bullet(doc, f"{l.name} — {l.overdue_count} overdue, {l.at_risk_count} at risk", _status_hex(theme, l.status_color))
     else:
         doc.add_paragraph("No projects currently of concern.")
 
     _add_heading(doc, "Suggested Focus")
     if data["focus"]:
         for l in data["focus"]:
-            _add_bullet(doc, l.name)
+            _add_bullet(doc, l.name, _status_hex(theme, l.status_color))
     else:
         doc.add_paragraph("Nothing urgent right now.")
 
@@ -612,7 +659,7 @@ def generate_homepage_docx(data):
     return buffer
 
 
-def generate_location_docx(data):
+def generate_location_docx(data, theme):
     doc = Document()
     location = data["location"]
     _add_heading(doc, f"{location.name} — Site Report", level=0)
@@ -622,20 +669,28 @@ def generate_location_docx(data):
     doc.add_paragraph(f"Overdue: {data['overdue_count']}    At risk: {data['at_risk_count']}    On time: {data['on_time_count']}")
 
     _add_heading(doc, "Done")
-    for t in data["done"]:
-        _add_bullet(doc, t.name)
-    if not data["done"]:
+    if data["done_by_deliverable"]:
+        for group in data["done_by_deliverable"]:
+            if group["fully_done"]:
+                # Whole deliverable is complete — just state the label.
+                _add_bullet(doc, f"{group['label']} — complete", _status_hex(theme, "green"))
+            else:
+                label_p = doc.add_paragraph()
+                label_p.add_run(group["label"]).bold = True
+                for t in group["tasks"]:
+                    _add_bullet(doc, t.name, _status_hex(theme, t.color))
+    else:
         doc.add_paragraph("Nothing completed yet.")
 
     _add_heading(doc, "To Do")
     for t in data["todo"]:
-        _add_bullet(doc, f"{t.name} (due {t.end_date})")
+        _add_bullet(doc, f"{t.name} (due {t.end_date})", _status_hex(theme, t.color))
     if not data["todo"]:
         doc.add_paragraph("Nothing outstanding.")
 
     _add_heading(doc, "Running Late")
     for t in data["late"]:
-        _add_bullet(doc, f"{t.name} (was due {t.end_date})")
+        _add_bullet(doc, f"{t.name} (was due {t.end_date})", _status_hex(theme, "red"))
     if not data["late"]:
         doc.add_paragraph("Nothing overdue.")
 
@@ -646,15 +701,16 @@ def generate_location_docx(data):
 
 def homepage_report(request):
     data = build_homepage_report_data()
+    theme = get_report_theme()
     fmt = request.GET.get("format", "pdf")
 
     if fmt == "word":
-        buffer = generate_homepage_docx(data)
+        buffer = generate_homepage_docx(data, theme)
         response = HttpResponse(buffer.read(), content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
         response["Content-Disposition"] = 'attachment; filename="project_overview_report.docx"'
         return response
 
-    html_string = render_to_string("tracker/reports/homepage_report.html", {"data": data})
+    html_string = render_to_string("tracker/reports/homepage_report.html", {"data": data, "theme": theme})
     pdf_bytes = HTML(string=html_string).write_pdf()
     response = HttpResponse(pdf_bytes, content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="project_overview_report.pdf"'
@@ -666,15 +722,16 @@ def location_report(request, location_id):
     if not can_access_location(request.current_manager, location):
         return render(request, "tracker/access_denied.html", status=403)
     data = build_location_report_data(location)
+    theme = get_report_theme()
     fmt = request.GET.get("format", "pdf")
 
     if fmt == "word":
-        buffer = generate_location_docx(data)
+        buffer = generate_location_docx(data, theme)
         response = HttpResponse(buffer.read(), content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
         response["Content-Disposition"] = f'attachment; filename="{location.name}_report.docx"'
         return response
 
-    html_string = render_to_string("tracker/reports/location_report.html", {"data": data})
+    html_string = render_to_string("tracker/reports/location_report.html", {"data": data, "theme": theme})
     pdf_bytes = HTML(string=html_string).write_pdf()
     response = HttpResponse(pdf_bytes, content_type="application/pdf")
     response["Content-Disposition"] = f'attachment; filename="{location.name}_report.pdf"'
