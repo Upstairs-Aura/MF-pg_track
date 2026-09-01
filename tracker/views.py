@@ -8,7 +8,6 @@ from django.views.decorators.csrf import csrf_exempt
 
 from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
-from django.utils import timezone
 from datetime import timedelta
 
 from .models import Manager, Location, ScopeHeading, Task, Remark, AuditLogEntry, PasswordResetLog, DailySnapshot
@@ -16,14 +15,12 @@ from .models import Manager, Location, ScopeHeading, Task, Remark, AuditLogEntry
 from django.db import models
 
 from django.template.loader import render_to_string
-from django.http import HttpResponse
 from weasyprint import HTML
 from docx import Document
 from docx.shared import Pt, RGBColor
 from io import BytesIO
 # from xhtml2 import pisa
 
-from io import BytesIO
 from .report_theme import get_report_theme, hex_to_rgb
 #colors for report
 
