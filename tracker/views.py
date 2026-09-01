@@ -481,24 +481,48 @@ def admin_reset(request):
                     else:
                         error = "Incorrect password."
         else:
-            # ---- stage 2: performing the actual reset ----
-            staff_id = request.POST.get("staff_id", "").strip()
-            new_password = request.POST.get("new_password", "")
-            confirm_password = request.POST.get("confirm_password", "")
+            action = request.POST.get("action")
 
-            manager = Manager.objects.filter(staff_id=staff_id).first()
-            if not manager:
-                error = "No manager found with that staff ID."
-            elif len(new_password) < 8:
-                error = "New password must be at least 8 characters."
-            elif new_password != confirm_password:
-                error = "Passwords do not match."
-            else:
-                manager.password_hash = make_password(new_password)
-                manager.is_active_session = False  # force logout of their current session
-                manager.save()
-                PasswordResetLog.objects.create(manager=manager)
-                success = f"Password updated for {manager.name} ({manager.staff_id})."
+            if action == "add_manager":
+                new_staff_id = request.POST.get("new_staff_id", "").strip()
+                new_name = request.POST.get("new_manager_name", "").strip()
+                new_password = request.POST.get("new_manager_password", "")
+                confirm_password = request.POST.get("new_manager_confirm", "")
+
+                if not new_staff_id or not new_name:
+                    error = "Staff ID and name are required."
+                elif Manager.objects.filter(staff_id=new_staff_id).exists():
+                    error = f"Staff ID {new_staff_id} already exists."
+                elif len(new_password) < 8:
+                    error = "Password must be at least 8 characters."
+                elif new_password != confirm_password:
+                    error = "Passwords do not match."
+                else:
+                    Manager.objects.create(
+                        staff_id=new_staff_id,
+                        name=new_name,
+                        password_hash=make_password(new_password),
+                    )
+                    success = f"Manager created: {new_name} ({new_staff_id})."
+
+            else:  # action == "reset_password" (or missing, for safety default to this path)
+                staff_id = request.POST.get("staff_id", "").strip()
+                new_password = request.POST.get("new_password", "")
+                confirm_password = request.POST.get("confirm_password", "")
+
+                manager = Manager.objects.filter(staff_id=staff_id).first()
+                if not manager:
+                    error = "No manager found with that staff ID."
+                elif len(new_password) < 8:
+                    error = "New password must be at least 8 characters."
+                elif new_password != confirm_password:
+                    error = "Passwords do not match."
+                else:
+                    manager.password_hash = make_password(new_password)
+                    manager.is_active_session = False
+                    manager.save()
+                    PasswordResetLog.objects.create(manager=manager)
+                    success = f"Password updated for {manager.name} ({manager.staff_id})."
 
     if not is_authenticated:
         return render(request, "tracker/admin_reset_gate.html", {"error": error})
