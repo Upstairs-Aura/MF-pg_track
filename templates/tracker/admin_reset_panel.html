@@ -20,7 +20,8 @@
         </div>
     </div>
     <p class="brand" style="justify-content:center; font-size:16px; margin-bottom:16px;">Admin Panel</p>
-    <p class="brand" style="justify-content:center; font-size:14px; margin-bottom:16px; font-weight:normal;">Session expires in 10 minutes</p>
+    <p class="brand" style="justify-content:center; font-size:14px; margin-bottom:16px; font-weight:normal;">Session expires in <span id="expiry-countdown" class="mono">{{ seconds_remaining|default:0 }} </span>minutes</p>
+    <!--Look here later-->
 
     <form method="post" action="{% url 'admin_reset_logout' %}" style="text-align:right; margin-bottom:12px;">
         {% csrf_token %}
@@ -88,12 +89,31 @@
     {% endif %}
 </div>
 
-<script>
-    setTimeout(function () {
-        window.location.reload();
-    }, {{ seconds_remaining }} *1000);
 
-    window.addEventListener("pagehide", function () {
+<script>
+    var secondsRemaining = {{ seconds_remaining|default:0 }};       // line 1: read value from Django
+    var countdownEl = document.getElementById("expiry-countdown");  // line 2: grab the span
+
+    function minutesLeft(totalSeconds) {                            // line 3-5: seconds -> whole minutes
+        return Math.max(1, Math.ceil(totalSeconds / 60));
+    }
+
+    countdownEl.textContent = minutesLeft(secondsRemaining);         // line 6: show it immediately
+
+    var countdownInterval = setInterval(function () {                // line 7-13: tick every second
+        secondsRemaining -= 1;
+        if (secondsRemaining <= 0) {
+            clearInterval(countdownInterval);
+            secondsRemaining = 0;
+        }
+        countdownEl.textContent = minutesLeft(secondsRemaining);
+    }, 1000);
+
+    setTimeout(function () {                                         // unchanged, but now correct
+        window.location.reload();
+    }, secondsRemaining * 1000);
+
+    window.addEventListener("pagehide", function () {                 // unchanged
         navigator.sendBeacon("{% url 'admin_reset_logout' %}");
     });
 </script>

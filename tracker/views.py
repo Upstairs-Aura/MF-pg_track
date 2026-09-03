@@ -465,7 +465,8 @@ def admin_reset(request):
             else:
                 entered = request.POST.get("admin_password", "")
                 if check_password(entered, settings.ADMIN_PASSWORD_HASH):
-                    request.session[ADMIN_SESSION_KEY] = (now + timedelta(minutes=5)).timestamp()
+                    authenticated_until = (now + timedelta(minutes=5)).timestamp()
+                    request.session[ADMIN_SESSION_KEY] = authenticated_until
                     request.session[ADMIN_ATTEMPTS_KEY] = 0
                     is_authenticated = True
                 else:
@@ -524,11 +525,14 @@ def admin_reset(request):
     if not is_authenticated:
         return render(request, "tracker/admin_reset_gate.html", {"error": error})
 
+    seconds_remaining = max(0, int(authenticated_until- now.timestamp()))
+
     recent_resets = PasswordResetLog.objects.select_related("manager").order_by("-reset_at")[:10]
     return render(request, "tracker/admin_reset_panel.html", {
         "error": error,
         "success": success,
         "recent_resets": recent_resets,
+        "seconds_remaining": seconds_remaining,
     })
 
 @csrf_exempt
