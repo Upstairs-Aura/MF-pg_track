@@ -1,4 +1,5 @@
 from datetime import date
+import ipaddress
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -444,8 +445,16 @@ ADMIN_SESSION_KEY = "admin_reset_authenticated_until"
 ADMIN_ATTEMPTS_KEY = "admin_reset_attempts"
 ADMIN_LOCKOUT_KEY = "admin_reset_lockout_until"
 
+def request_is_from_tailscale(request):
+    ip = request.META.get("REMOTE_ADDR", "")
+    try:
+        return ipaddress.ip_address(ip) in ipaddress.ip_network("100.64.0.0/10")
+    except ValueError:
+        return False
 
 def admin_reset(request):
+    if not request_is_from_tailscale(request):
+        return render(request, "tracker/access_denied.html", status=404)
     now = timezone.now()
 
     lockout_until = request.session.get(ADMIN_LOCKOUT_KEY)
