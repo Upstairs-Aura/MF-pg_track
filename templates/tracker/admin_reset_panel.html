@@ -72,6 +72,11 @@
                 <label class="field-label" for="id_new_manager_confirm">Confirm password</label>
                 <input class="field-input" type="password" id="id_new_manager_confirm" name="new_manager_confirm" required>
 
+                <label class="field-label" for="id_new_manager_is_admin" style="display:flex; align-items:center; gap:8px; font-weight:normal; margin-top:4px;">
+                    <input type="checkbox" id="id_new_manager_is_admin" name="new_manager_is_admin">
+                    Admin (sees every project, all departments)
+                </label>
+
                 <button type="submit" class="btn btn--primary btn--full">Add manager</button>
             </form>
         </div>
