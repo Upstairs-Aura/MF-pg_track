@@ -1,4 +1,5 @@
 from datetime import date
+import ipaddress
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -444,8 +445,16 @@ ADMIN_SESSION_KEY = "admin_reset_authenticated_until"
 ADMIN_ATTEMPTS_KEY = "admin_reset_attempts"
 ADMIN_LOCKOUT_KEY = "admin_reset_lockout_until"
 
+def request_is_from_tailscale(request):
+    ip = request.META.get("HTTP_X_REAL_IP") or request.META.get("REMOTE_ADDR", "")
+    try:
+        return ipaddress.ip_address(ip) in ipaddress.ip_network("100.64.0.0/10")
+    except ValueError:
+        return False
 
 def admin_reset(request):
+    if not request_is_from_tailscale(request):
+        return render(request, "tracker/access_denied.html", status=404)
     now = timezone.now()
 
     lockout_until = request.session.get(ADMIN_LOCKOUT_KEY)
@@ -486,6 +495,7 @@ def admin_reset(request):
                 new_name = request.POST.get("new_manager_name", "").strip()
                 new_password = request.POST.get("new_manager_password", "")
                 confirm_password = request.POST.get("new_manager_confirm", "")
+                new_is_admin = request.POST.get("new_manager_is_admin") == "on"
 
                 if not new_staff_id or not new_name:
                     error = "Staff ID and name are required."
@@ -500,7 +510,9 @@ def admin_reset(request):
                         staff_id=new_staff_id,
                         name=new_name,
                         password_hash=make_password(new_password),
+                        is_admin=new_is_admin,
                     )
+                    role_label = "Admin" if new_is_admin else "Manager"
                     success = f"Manager created: {new_name} ({new_staff_id})."
 
             else:  # action == "reset_password" (or missing, for safety default to this path)
